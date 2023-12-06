@@ -1,0 +1,5 @@
+config.txt
+__pycache__
+
+# Ignore a local venv
+pybin

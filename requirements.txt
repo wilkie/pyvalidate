@@ -1,0 +1,8 @@
+numpy
+flask
+waitress
+pytest
+pytest-mock
+requests-mock
+coverage
+esprima
