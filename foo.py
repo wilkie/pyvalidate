@@ -1,6 +1,8 @@
 #!/bin/env python
 
 from lib.analysis.analyzer import Analyzer
+from lib.nodes.class_node import ClassNode
+from lib.nodes.function_node import FunctionNode
 
 code = open('u3l23_01.js', 'r').read()
 code = open('simple.js', 'r').read()
@@ -25,8 +27,25 @@ print()
 
 print("Possible values for 'player':")
 variable = context.lookup('player')
-print(variable)
 if variable:
   for value in variable.get_value().values:
     if value[0] == 'reference':
-      print(value[1])
+      print('ref:', value[1])
+
+import os, sys
+sys.exit(0)
+
+def count(type):
+  item = context.lookup(type)
+  if isinstance(item, FunctionNode):
+    return context.lookup(type).called
+  elif isinstance(item, ClassNode):
+    return context.lookup(type).instanced
+  return 0
+
+def _assert(actual, op, expected):
+  print(actual)
+  assert(eval(str(actual) + ' ' + op + ' ' + str(expected)))
+
+_assert(count('Sprite'), '>=', 2)
+_assert(count('createSprite'), '>=', 2)

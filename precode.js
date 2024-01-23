@@ -1,3 +1,7 @@
+// This is preamble code that defines the library functions
+// and contains type annotations and hints that help the semantic analysis of
+// a program.
+
 class Sprite {
   constructor() {
   }
@@ -134,5 +138,5 @@ function text(string, x, y) {
  * @returns {number}
  */
 function randomNumber(min, max) {
-    return (Math.random() * (max - min)) + min;
+  return (Math.random() * (max - min)) + min;
 }

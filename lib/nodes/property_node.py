@@ -1,8 +1,7 @@
 # vim: ts=4:sw=4
-from lib.analysis.context import Context
-from lib.analysis.method import Method
+from lib.nodes.structural_node import StructuralNode
 
-class Property(Context):
+class PropertyNode(StructuralNode):
     """ Holds information about a property (which is up to two methods).
     """
 

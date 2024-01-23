@@ -5,10 +5,11 @@
     return a + b;
 }*/
 
+
 let player = createSprite(100, 100);
 player.x = randomNumber(0, 400);
 
-if (player.x > 300) {
+if (player.x > 399) {
   player.isTouching(player);
 }
 

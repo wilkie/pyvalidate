@@ -1,7 +1,7 @@
 # vim: ts=4:sw=4
-from lib.analysis.block import Block
+from lib.nodes.block_node import BlockNode
 
-class Program(Block):
+class ProgramNode(BlockNode):
     """ The main context for the entire program.
     """
 

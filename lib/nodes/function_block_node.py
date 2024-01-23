@@ -1,8 +1,8 @@
 # vim: ts=4:sw=4
-from lib.analysis.block import Block
+from lib.nodes.block_node import BlockNode
 
 
-class FunctionBlock(Block):
+class FunctionBlockNode(BlockNode):
     """ A block that serves as the main context of a function.
     """
 

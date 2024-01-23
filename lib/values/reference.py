@@ -1,13 +1,11 @@
 # vim: ts=4:sw=4
-from lib.analysis.context import Context
 
-
-class Reference(Context):
+class Reference:
     """ Represents a class instance within the code.
     """
 
-    def __init__(self, node, parent, annotation=None):
-        super().__init__(node, parent=parent, annotation=annotation)
+    def __init__(self, node, base_class, annotation=None):
+        self.parent = base_class
 
         self.methods = {}
         self.properties = {}
@@ -20,13 +18,13 @@ class Reference(Context):
         By default, it will also search the context above it.
         """
 
-        if name in self.methods:
-            return self.methods[name]
-
         if name in self.properties:
             return self.properties[name]
 
-        return super().lookup(name, recurse=recurse)
+        if name in self.methods:
+            return self.methods[name]
+
+        return self.parent.lookup(name, recurse=recurse)
 
     def add_call(self, name, node, condition=None):
         from lib.analysis.method import Method
@@ -57,3 +55,6 @@ class Reference(Context):
             lines.append(f'{indent}{prop_name}: {values}')
 
         return lines
+
+    def __str__(self):
+        return '\n'.join(self.to_string())

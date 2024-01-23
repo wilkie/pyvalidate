@@ -1,7 +1,7 @@
 # vim: ts=4:sw=4
-from lib.analysis.block import Block
+from lib.nodes.block_node import BlockNode
 
-class Class(Block):
+class ClassNode(BlockNode):
     """ Represents a class within the code.
     """
 
@@ -11,9 +11,16 @@ class Class(Block):
         self.methods = {}
         self.properties = {}
 
+    def add_instance(self, context):
+        """ When this class is instantiated.
+        """
+
+        self.instanced += 1
+        context.add_instantiation(self)
+
     def add_call(self, name, node, condition=None):
         # Called a static method
-        self.methods[name].add_call(node, condition=condition)
+        self.functions[name].add_call(node, condition=condition)
 
     def add_method(self, name, method):
         """ Adds the annotated method to the class context.
@@ -49,6 +56,10 @@ class Class(Block):
         lines = []
 
         lines.append(f'{indent}constructed: {self.instanced} times')
+
+        for method_name, method in self.functions.items():
+            lines.append(f'{indent}static {method_name}() -> {method.annotation.get("returns")}')
+            lines.extend(method.to_string(indent + '  '))
 
         for method_name, method in self.methods.items():
             lines.append(f'{indent}{method_name}() -> {method.annotation.get("returns")}')

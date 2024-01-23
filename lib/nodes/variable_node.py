@@ -1,7 +1,7 @@
 # vim: ts=4:sw=4
-from lib.analysis.context import Context
+from lib.nodes.structural_node import StructuralNode
 
-class Variable(Context):
+class VariableNode(StructuralNode):
     """ Holds information about a variable.
     """
 

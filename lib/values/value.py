@@ -2,11 +2,11 @@
 import math
 
 
-from lib.analysis.return_value import ReturnValue
-from lib.analysis.reference import Reference
-from lib.analysis.context import Context
-from lib.analysis.variable import Variable
-from lib.analysis.raised import Raised
+from lib.nodes.structural_node import StructuralNode
+from lib.nodes.variable_node import VariableNode
+
+from lib.values.reference import Reference
+from lib.values.raised import Raised
 
 
 class Value:
@@ -42,7 +42,7 @@ class Value:
 
         # If this is an internal representation of a node, we have a possible
         # annotation of its return type
-        if isinstance(node, Context):
+        if isinstance(node, StructuralNode):
             ret_type = node.annotation.get('returns')
         else:
             # Otherwise, this is a normal parser node of the function definition
@@ -344,10 +344,10 @@ class Value:
 
     @staticmethod
     def valueOf(node, text, ast, context=None, base=None):
-        """ Negotiate the value of the given expression.
+        """ Determine the value of the given subtree rooted at the given node.
         """
 
-        from lib.analysis.property import Property
+        from lib.nodes.property_node import PropertyNode
 
         if base is None:
             base = node
@@ -364,14 +364,13 @@ class Value:
 
         if node.type == "Identifier":
             # Lookup the Value currently representing the named identifier
-            print('looking up', node.name)
             variable = context.lookup(node.name)
             if variable is None:
                 return None
-            print('found', variable.get_value().values)
             return variable.get_value()
 
         if node.type == "ExpressionStatement":
+            # Recursively determine the value of the expression
             return Value.valueOf(node.expression, text, ast, context)
         
         if node.type == "AssignmentExpression":
@@ -379,7 +378,6 @@ class Value:
             this = context
             prop = None
             if node.left.type == "MemberExpression":
-                print('member assign')
                 # Look up reference
                 if node.left.object.type == "ThisExpression":
                     this = context.lookup('this')
@@ -388,7 +386,6 @@ class Value:
                 prop = this.lookup(node.left.property.name)
             else:
                 # A normal variable
-                print(node)
                 prop = context.lookup(node.left.name)
 
             # We only care about the value of the right-hand side
@@ -398,11 +395,11 @@ class Value:
 
             # If the property does not exist, we must create it
             if prop is None:
-                prop = Variable(node.left.property, this, annotation=[])
+                prop = VariableNode(node.left.property, this, annotation=[])
                 this.add_property(node.left.property.name, prop)
 
-            if isinstance(prop, Property):
-                prop = Variable(node.left.property, prop, annotation=[])
+            if isinstance(prop, PropertyNode):
+                prop = VariableNode(node.left.property, prop, annotation=[])
                 this.add_property(node.left.property.name, prop)
 
             prop.set_value(value)
@@ -411,12 +408,10 @@ class Value:
             return value
 
         if node.type == "CallExpression":
-            print('call', context.condition)
             # We then need to negotiate the function value
-            from lib.analysis.call import Call
-            from lib.analysis.klass import Class
-            from lib.analysis.method import Method
-            from lib.analysis.function import Function
+            from lib.nodes.call_node import CallNode
+            from lib.nodes.class_node import ClassNode
+            from lib.nodes.function_node import FunctionNode
 
             # First, determine the callee context
 
@@ -429,54 +424,64 @@ class Value:
                 if this is None:
                     # Unknown reference
                     # Always a runtime error while evaluating this expression
-                    print('raises')
                     raised = context.add_raises("ReferenceError", f'{node.callee.object.name} is not defined')
                     return Value(node, kind='raised', value=raised, condition=context.condition)
 
-                print('method!')
                 callee = this.lookup(node.callee.property.name)
 
                 # Add a reference to it being called in this context
-                print('condition?', context.condition)
-                this.add_call(node.callee.property.name, node, condition=context.condition)
+
+                # Is this a static method?
+                if not isinstance(callee, FunctionNode):
+                    # It is indeed an instance method
+                    this.add_call(node.callee.property.name, node, condition=context.condition)
             else:
                 # A normal function
-                print('normal function / constructor')
                 callee = context.lookup(node.callee.name)
 
+            # The function or member lookup failed
             if callee is None:
                 return None
 
+            # We want to determine if the function call is the constructor
             constructing = False
-            if isinstance(callee, Class):
-                # The function is the constructor of the class, if any
+
+            # The constructor is essentially a call on the class itself
+            if isinstance(callee, ClassNode):
+                # Keep track of the possible instantiations within the current context
                 constructing = True
 
-                # Keep track of the possible instanciations
-                callee.instanced += 1
-
                 # Create an instanced context
-                instance = Reference(node, callee, callee.annotation)
+                base_class = callee
+                instance = Reference(node, base_class, base_class.annotation)
 
                 # Look up the possible constructor method
-                callee = callee.lookup('constructor')
+                callee = base_class.lookup('constructor')
 
                 # Create a reference value
                 this = Value(node, kind='reference', value=instance, condition=context.condition)
+
+                # Make a note in the class annotation that an instance was created
+                # and the context within which it was created.
+                base_class.add_instance(context)
 
                 # If there is no constructor, we still return 'this'
                 # No need to go through the constructor
                 if callee is None:
                     return this
-            elif isinstance(callee, Function):
+            elif isinstance(callee, FunctionNode):
+                # Normal function / static method call
                 callee.add_call(node.callee, condition=context.condition)
 
+                # Add instantiations this call makes
+                context.add_instantiations(callee.instantiates)
+
             # Analysis of the possible values
-            value = Call(node).valueOf(callee, text, ast, context)
+            value = CallNode(node).valueOf(callee, text, ast, context)
 
             # If this is a constructor call, the value is always the reference
+            # and not any value returned by the function body of the constructor.
             if constructing:
-                print('constructing')
                 return this
 
             # Otherwise, we return the aggregate value
@@ -507,18 +512,12 @@ class Value:
             elif node.operator == "-":
                 return left - right
             elif node.operator == "*":
-                print('multiply')
-                print(left)
-                print(right)
                 return left * right
             elif node.operator == "/":
                 return left / right
             elif node.operator == "<":
                 return left < right
             elif node.operator == ">":
-                print('>')
-                print(left)
-                print(right)
                 return left > right
 
         if node.type == "Literal":

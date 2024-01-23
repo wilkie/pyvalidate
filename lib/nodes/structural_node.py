@@ -1,5 +1,5 @@
 # vim: ts=4:sw=4
-class Context:
+class StructuralNode:
     """ Keeps track of analysis context.
 
     This is subclassed for different types of context: functions, classes, etc.
@@ -11,6 +11,21 @@ class Context:
         self.parent = parent
         self.conditions = []
         self.condition = None
+        self.children = {}
+
+        if parent:
+            parent.add_child(node, self)
+
+    def find(self, node):
+        """ Finds the context defined by the given node.
+        """
+        return self.children.get(f"{node.range[0]}.{node.range[1]}", None)
+
+    def add_child(self, node, context):
+        """ Adds the given child.
+        """
+
+        self.children[f"{node.range[0]}.{node.range[1]}"] = context
 
     def add_condition(self, value):
         """ Adds the given Value as the condition on which code is now assuming.
@@ -39,6 +54,9 @@ class Context:
         return ""
 
     def lookup(self, name, recurse=True):
+        """ Lookup a context by its name.
+        """
+
         if recurse and self.parent:
             return self.parent.lookup(name)
 

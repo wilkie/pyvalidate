@@ -1,15 +1,12 @@
 # vim: ts=4:sw=4
-from lib.analysis.context import Context
-from lib.analysis.block import Block
-from lib.analysis.method import Method
-from lib.analysis.klass import Class
-from lib.analysis.variable import Variable
-from lib.analysis.value import Value
-from lib.analysis.function import Function
-from lib.analysis.function_block import FunctionBlock
+from lib.nodes.structural_node import StructuralNode
+from lib.nodes.method_node import MethodNode
+from lib.nodes.variable_node import VariableNode
+from lib.nodes.function_block_node import FunctionBlockNode
+from lib.values.value import Value
 
 
-class Call(Context):
+class CallNode(StructuralNode):
     """ Manages the context around a function call.
     """
 
@@ -19,11 +16,9 @@ class Call(Context):
         Call is an AST node representing a CallExpression.
         """
 
-        print('callee!!!!!!!', callee.annotation.get('returns'))
-
         definition = None
         body = None
-        if isinstance(callee, Method):
+        if isinstance(callee, MethodNode) or callee.node.static:
             # This is a method of a class
             definition = callee.node.value
         else:
@@ -31,17 +26,15 @@ class Call(Context):
 
         # Assign values to the Variable objects representing the arguments
         # and then continue to negotiate the resulting value.
-        callee_context = FunctionBlock(callee.node, callee)
+        callee_context = FunctionBlockNode(callee.node, callee)
 
         if this is not None:
             callee_context.add_variable('this', this)
 
         i = 0
-        print('calling', definition)
         for param in definition.params:
             # TODO: annotate the type of the variable
-            print('adding', param.name)
-            variable = Variable(param, callee, annotation=None)
+            variable = VariableNode(param, callee, annotation=None)
             variable.set_value(Value.valueOf(self.node.arguments[i], text, ast, context))
             callee.add_variable(param.name, variable)
             i += 1
@@ -61,7 +54,4 @@ class Call(Context):
 
         # Get possible returns / raises
         value = Value.combine(callee, callee_context.returns, halt_if_true=True)
-        print('returned value:')
-        print(value.values)
-
         return value
