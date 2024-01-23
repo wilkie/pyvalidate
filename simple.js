@@ -9,7 +9,9 @@
 let player = createSprite(100, 100);
 player.x = randomNumber(0, 400);
 
-if (player.x > 399) {
+player.x += 50;
+
+if (player.x < 50) {
   player.isTouching(player);
 }
 

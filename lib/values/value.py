@@ -391,7 +391,30 @@ class Value:
             # We only care about the value of the right-hand side
             value = Value.valueOf(node.right, text, ast, context)
 
-            # Now, we want to set the variable state to that value
+            # Is this also a mathematical operation? (+=, etc)
+            if node.operator == '+=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a + b)
+            elif node.operator == '-=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a - b)
+            elif node.operator == '*=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a * b)
+            elif node.operator == '/=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a / b)
+            elif node.operator == '%=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a % b)
+            elif node.operator == '>>=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a >> b)
+            elif node.operator == '<<=':
+                cur = prop.get_value()
+                value = cur.performBinaryOperation(value, lambda a, b: a << b)
+
+            # Now, we want to set the variable state to that new value
 
             # If the property does not exist, we must create it
             if prop is None:
