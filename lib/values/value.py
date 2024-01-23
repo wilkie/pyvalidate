@@ -393,26 +393,19 @@ class Value:
 
             # Is this also a mathematical operation? (+=, etc)
             if node.operator == '+=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a + b)
+                value = prop.get_value() + value
             elif node.operator == '-=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a - b)
+                value = prop.get_value() - value
             elif node.operator == '*=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a * b)
+                value = prop.get_value() * value
             elif node.operator == '/=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a / b)
+                value = prop.get_value() / value
             elif node.operator == '%=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a % b)
+                value = prop.get_value() % value
             elif node.operator == '>>=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a >> b)
+                value = prop.get_value() >> value
             elif node.operator == '<<=':
-                cur = prop.get_value()
-                value = cur.performBinaryOperation(value, lambda a, b: a << b)
+                value = prop.get_value() << value
 
             # Now, we want to set the variable state to that new value
 
