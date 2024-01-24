@@ -8,3 +8,7 @@ if (keyWentDown("left")) {
 if (keyWentDown("right")) {
   player.velocityY = 5;
 }
+
+for (let i = 0; i < 4; i++) {
+  player.x += 50;
+}

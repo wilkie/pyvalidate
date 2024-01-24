@@ -32,6 +32,7 @@ class Analyzer:
         self.code = code
         self.precode = []
         self.ast = None
+        self.precodeast = None
         self.context = None
         self.docstring_re = None
 
@@ -41,9 +42,16 @@ class Analyzer:
         """
         self.precode.append(code)
 
-    def annotate(self):
+        # Invalidate the precode AST
+        self.precodeast = None
+
+    def annotate(self, reparse=False):
         """ Go through and annotate the variables with their types.
         """
+
+        # If requested, throw away the old structure
+        if reparse:
+            self.ast = None
 
         # Parse all code. This stores its results in AST properties
         self._parse()
@@ -312,16 +320,17 @@ class Analyzer:
         return Value.valueOf(node, text, self, context)
 
     def _parse(self):
+        if self.precodeast is None:
+            code = ""
+            for precode in self.precode:
+                code += precode
+            self.precodetext = code
+            self.precodeast = parseScript(code, {
+                'range': True, 'tolerant': True, 'comment': True, 'loc': True
+            })
+
         if self.ast is not None:
             return self.ast
-
-        code = ""
-        for precode in self.precode:
-            code += precode
-        self.precodetext = code
-        self.precodeast = parseScript(code, {
-            'range': True, 'tolerant': True, 'comment': True, 'loc': True
-        })
 
         code = self.code
         self.ast = parseScript(code, {

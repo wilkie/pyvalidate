@@ -12,14 +12,20 @@ a.augment(math)
 precode = open('precode.js', 'r').read()
 a.augment(precode)
 
+print(a)
+context = a.annotate()
+print("Possible values for 'player':")
+variable = context.lookup('player')
+if variable:
+  for value in variable.get_value().values:
+    if value[0] == 'reference':
+      print('ref:', value[1])
 a.augment("""
   function keyWentDown(key) {
     if (key === "right") { return true; }
     return false;
   }
 """)
-
-print(a)
 context = a.annotate()
 print()
 print("Context:")
