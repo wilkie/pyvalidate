@@ -347,6 +347,7 @@ class Analyzer:
         def node_to_str(node, indent):
             lines = []
             lines.append(f"type: {node.type}")
+            lines.extend(node.__str__().split('\n'))
 
             return '\n'.join(lines)
 

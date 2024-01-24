@@ -11,6 +11,14 @@ class ClassNode(BlockNode):
         self.methods = {}
         self.properties = {}
 
+    def name(self):
+        """ Get the common name for this class.
+        """
+        if self.node.id:
+            return self.node.id.name
+
+        return None
+
     def add_instance(self, context):
         """ When this class is instantiated.
         """

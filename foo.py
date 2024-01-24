@@ -44,7 +44,8 @@ variable = context.lookup('player')
 if variable:
   for value in variable.get_value().values:
     if value[0] == 'reference':
-      print('ref:', value[1])
+      print('ref:', value[1].parent.name())
+      print('\n'.join(value[1].to_string(indent='- ')))
 
 import os, sys
 sys.exit(0)
