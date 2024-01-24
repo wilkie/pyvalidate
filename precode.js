@@ -102,6 +102,13 @@ function keyDown(key) {
 }
 
 /**
+ * @param {string} key - Key that is pressed.
+ * @returns {bool}
+ */
+function keyWentDown(key) {
+}
+
+/**
  */
 function drawSprites() {
 }

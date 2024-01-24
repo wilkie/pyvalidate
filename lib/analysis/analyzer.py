@@ -234,6 +234,11 @@ class Analyzer:
             # This is a divergence... determine the condition
             test = self._valueOf(node.test, text, ast, context)
 
+            if test is None or test.raised():
+                # The expression could not be evaluated.
+                # Maybe it raised?
+                return None
+
             # Dead code detection
             if test.false():
                 # If it is always False, do not continue

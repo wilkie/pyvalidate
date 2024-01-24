@@ -12,6 +12,7 @@ class StructuralNode:
         self.conditions = []
         self.condition = None
         self.children = {}
+        self.raised = {}
 
         if parent:
             parent.add_child(node, self)
@@ -20,6 +21,13 @@ class StructuralNode:
         """ Finds the context defined by the given node.
         """
         return self.children.get(f"{node.range[0]}.{node.range[1]}", None)
+
+    def add_raised(self, raised):
+        self.raised[raised.exception] = self.raised.get(raised.exception, [])
+        self.raised[raised.exception].append(raised)
+
+        if self.parent:
+            self.parent.add_raised(raised)
 
     def add_child(self, node, context):
         """ Adds the given child.

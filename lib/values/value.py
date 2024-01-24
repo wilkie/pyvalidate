@@ -125,6 +125,18 @@ class Value:
 
         return ret
 
+    def raised(self):
+        """ Determines if this expression always raises.
+        """
+        is_raised = len(self.values) > 0
+        for value in self.values:
+            # If any value is non-raised, we return False
+            if value[0] != 'raised':
+                is_raised = False
+                break
+
+        return is_raised
+
     def false(self):
         """ Determines if this Value is always Falsey.
         """
@@ -444,6 +456,9 @@ class Value:
                     return Value(node, kind='raised', value=raised, condition=context.condition)
 
                 callee = this.lookup(node.callee.property.name)
+                if callee is None:
+                    raised = context.add_raises('ReferenceError', f'{node.callee.object.name}.{node.callee.property.name} is not a function')
+                    return Value(node, kind='raised', value=raised, condition=context.condition)
 
                 # Add a reference to it being called in this context
 
@@ -454,10 +469,9 @@ class Value:
             else:
                 # A normal function
                 callee = context.lookup(node.callee.name)
-
-            # The function or member lookup failed
-            if callee is None:
-                return None
+                if callee is None:
+                    raised = context.add_raises('ReferenceError', f'{node.callee.name} is not defined')
+                    return Value(node, kind='raised', value=raised, condition=context.condition)
 
             # We want to determine if the function call is the constructor
             constructing = False
@@ -535,6 +549,17 @@ class Value:
                 return left < right
             elif node.operator == ">":
                 return left > right
+            elif node.operator == "==":
+                return left == right
+            elif node.operator == "===":
+                # TODO: this is a bit more special than this
+                return left == right
+            elif node.operator == "!=":
+                return left != right
+            elif node.operator == ">=":
+                return left >= right
+            elif node.operator == "<=":
+                return left <= right
 
         if node.type == "Literal":
             # This is the literal value

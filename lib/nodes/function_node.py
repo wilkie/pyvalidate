@@ -14,6 +14,10 @@ class FunctionNode(BlockNode):
         self.called = 0
         self.called_conditionally = {}
 
+    def add_raised(self, raised):
+        self.raised[raised.exception] = self.raised.get(raised.exception, [])
+        self.raised[raised.exception].append(raised)
+
     def add_call(self, node, condition=None):
         """ Adds a reference to this function being called.
         """

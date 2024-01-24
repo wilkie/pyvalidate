@@ -31,6 +31,8 @@ class BlockNode(StructuralNode):
         """
         ret = Raised(exception, message, self.condition)
         self.raises.append(ret)
+
+        self.add_raised(ret)
         return ret
 
     def add_variable(self, name, variable):
@@ -131,5 +133,8 @@ class BlockNode(StructuralNode):
 
         for klass, info in self.instantiates.items():
             lines.append(f'{indent}instantiates {klass.get_name()}: {info.get("instanced", 0)}')
+
+        for exception, raised in self.raised.items():
+            lines.append(f'{indent}raises {exception}: {len(raised)} times')
 
         return lines

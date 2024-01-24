@@ -11,6 +11,14 @@ math = open('math.js', 'r').read()
 a.augment(math)
 precode = open('precode.js', 'r').read()
 a.augment(precode)
+
+a.augment("""
+  function keyWentDown(key) {
+    if (key === "right") { return true; }
+    return false;
+  }
+""")
+
 print(a)
 context = a.annotate()
 print()
